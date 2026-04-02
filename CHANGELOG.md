@@ -1,4 +1,3 @@
-t
 # CHANGELOG
 
 ## Table des mises à jour
@@ -14,5 +13,3 @@ La structure du projet, les workflows de compilation (Isabelle + LaTeX), ainsi q
 Cette première version marque le début du développement public du projet, offrant aux utilisateurs un accès clair, reproductible et transparent à l’ensemble des documents scientifiques, sources formelles et outils associés.
 
 ---
->>>>>>> Stashed changes
-
