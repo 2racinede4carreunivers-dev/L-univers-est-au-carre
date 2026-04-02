@@ -13,3 +13,6 @@ La structure du projet, les workflows de compilation (Isabelle + LaTeX), ainsi q
 Cette première version marque le début du développement public du projet, offrant aux utilisateurs un accès clair, reproductible et transparent à l’ensemble des documents scientifiques, sources formelles et outils associés.
 
 ---
+## Commit f04c054db082822429b35fd195df44ec5fbc9d30 — 2026-04-02 15:55 UTC
+- Mise à jour sans note fournie.
+
