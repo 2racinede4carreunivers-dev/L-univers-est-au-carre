@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'copilot/**'
   workflow_dispatch:
 
 permissions:
@@ -44,8 +45,42 @@ jobs:
         echo "Compilation de la session Isabelle Univers_Au_Carre via ROOT dans src/hol"
         isabelle build -v -d src/hol Univers_Au_Carre
 
-    ###########################################################################
-    # 🟦 SECTION LATEX — VERSION ROBUSTE ET CORRIGÉE
+    - name: Generate repository structure and mental map metadata
+      run: |
+        echo "# Arborescence du dépôt — $(date -u +"%Y-%m-%d %H:%M UTC")" > repo_structure.txt
+        echo "" >> repo_structure.txt
+        echo "Commit : $(git rev-parse HEAD)" >> repo_structure.txt
+        echo "" >> repo_structure.txt
+        find . \
+          -not -path './.git/*' \
+          -not -path './isabelle/*' \
+          -not -path './Isabelle2024*' \
+          | sort \
+          | sed 's|^\./||' \
+          | awk -F/ '{
+              depth = NF - 1
+              indent = ""
+              for (i = 0; i < depth; i++) indent = indent "  "
+              name = $NF
+              if (depth == 0) name = "📁 " name
+              else if (name ~ /\.thy$/) name = "🔵 " name
+              else if (name ~ /\.tex$/) name = "🟡 " name
+              else if (name ~ /\.pdf$/) name = "🟢 " name
+              else if (name ~ /\.md$/) name = "📄 " name
+              else if (name ~ /\.yml$/) name = "⚙️  " name
+              print indent "└─ " name
+            }' >> repo_structure.txt
+
+        echo "" >> repo_structure.txt
+        echo "## Fichiers sources (preuves HOL)" >> repo_structure.txt
+        ls src/hol/*.thy 2>/dev/null | while read f; do echo "  - $f"; done >> repo_structure.txt
+        echo "" >> repo_structure.txt
+        echo "## Fichiers sources (LaTeX)" >> repo_structure.txt
+        ls src/tex/*.tex 2>/dev/null | while read f; do echo "  - $f"; done >> repo_structure.txt
+        echo "" >> repo_structure.txt
+        echo "## Documents PDF" >> repo_structure.txt
+        ls src/pdf/*.pdf 2>/dev/null | while read f; do echo "  - $f"; done >> repo_structure.txt
+
     ###########################################################################
 
     - name: Nettoyer les anciens PDF
@@ -84,6 +119,12 @@ jobs:
         echo "Branche : $(git rev-parse --abbrev-ref HEAD)" >> build_metadata.txt
         echo "Date : $(date -u)" >> build_metadata.txt
         echo "" >> build_metadata.txt
+        echo "Fichiers HOL sources :" >> build_metadata.txt
+        ls src/hol/*.thy >> build_metadata.txt 2>/dev/null || echo "Aucun .thy" >> build_metadata.txt
+        echo "" >> build_metadata.txt
+        echo "Fichiers LaTeX sources :" >> build_metadata.txt
+        ls src/tex/*.tex >> build_metadata.txt 2>/dev/null || echo "Aucun .tex" >> build_metadata.txt
+        echo "" >> build_metadata.txt
         echo "PDF générés :" >> build_metadata.txt
         ls src/pdf/*.pdf >> build_metadata.txt 2>/dev/null || echo "Aucun PDF" >> build_metadata.txt
         echo "" >> build_metadata.txt
@@ -107,6 +148,18 @@ jobs:
       with:
         name: build-metadata
         path: build_metadata.txt
+
+    - name: Upload repository structure
+      uses: actions/upload-artifact@v4
+      with:
+        name: repo-structure
+        path: repo_structure.txt
+
+    - name: Upload mental map
+      uses: actions/upload-artifact@v4
+      with:
+        name: carte-mentale
+        path: CARTE_MENTALE.md
 
     - name: Generate build provenance (SLSA v1 pour .tex, .thy, .pdf)
       uses: actions/attest-build-provenance@v1
